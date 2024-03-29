@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { runPracticeDayjs } from './src/practice-dayjs';
 import { getCalendarColumns, getDayColor, getDayText} from './src/util';
@@ -14,17 +14,25 @@ const columnSize =35;
 const Column = ({
  text,
  color,
- opacity,
+ opacity, 
+ disabled,
+ onPress,
+ isSelected,
 }) => {
  return (
-   <View style={{
-     width: columnSize, 
+   <TouchableOpacity
+    disabled={disabled}
+    onPress={onPress}
+    style={{
+     width: columnSize,  
      height: columnSize, 
      justifyContent: "center", 
-     alignItems:"center"
+     alignItems:"center",
+     backgroundColor: isSelected ? "#c2c2c2": "transparent",
+     borderRadius: columnSize/2, 
      }}>
-      <Text style={{ color: color }}>{text}</Text>
-   </View >
+      <Text style={{ color, opacity }}>{text}</Text>
+   </TouchableOpacity>
  )
 }
 
@@ -40,11 +48,15 @@ const ArrowButton = ({iconName}) => {
 export default function App() {
   // MARK: - Property
   const now = dayjs();
-  const columns = getCalendarColumns(now);
 
-  //상단 헤더 함수
+  const columns = getCalendarColumns(selectedDate);
+
+  const [selectedDate, setSelectedDate] = useState(now);
+
+
+  // Fuction: - 상단 헤더 함수
   const ListHeaderComponent = () => {
-    const currentDateText = dayjs(now).format("YYYY.MM.DD");
+    const currentDateText = dayjs(selectedDate).format("YYYY.MM.DD");
     return (
       <View>
 
@@ -58,7 +70,7 @@ export default function App() {
 
           <ArrowButton iconName="arrow-right" />
 
-        </View>
+        </View> 
 
 
         {/*일 월 화 수 목 금 토 */}
@@ -67,7 +79,13 @@ export default function App() {
             const dayText = getDayText(day);
             const color = getDayColor(day);
             return (
-              <Column key={`day-${day}`} text={dayText} color={color} opacity={1} />
+              <Column 
+              key={`day-${day}`} 
+              text={dayText} 
+              color={color} 
+              opacity={1} 
+              disabled={true}
+              />
             ) 
           })}
         </View>
@@ -76,15 +94,26 @@ export default function App() {
   }
 
 
-  // Fuction날짜 item 가져오는 함수 
+  // Fuction: - 날짜 item 가져오는 함수 
   const renderItem = ({ item: date }) => {
     const dateText = dayjs(date).get('date');
     const day = dayjs(date).get('day');
     const color = getDayColor(day);
-    const isCurrentMonth = dayjs(date).isSame(now,'month');
+    const isCurrentMonth = dayjs(date).isSame(selectedDate,'month');
+    const onPress = () => {
+      setSelectedDate(date);
+    }
+    const isSelected = dayjs(date).isSame(selectedDate,'date');
+
     return (
     <View>
-       <Column  text={dateText} color={color} opacity={isCurrentMonth? 1: 0.4}/>
+       <Column  
+       text={dateText} 
+       color={color} 
+       opacity={isCurrentMonth? 1: 0.4}
+       onPress={onPress}
+       isSelected = {isSelected}
+       />
     </View> 
     ) 
   }
@@ -93,7 +122,13 @@ export default function App() {
     runPracticeDayjs();
   }, []);
 
+  //날짜 선택시 해당 날짜로 초기값 설정
+  useEffect(() => {
+    console.log('changed selectedDate', dayjs(selectedDate).format("YYYY.MM.DD"))
+  }, [selectedDate]);
 
+
+  
   // MARK: - Body
   return (
     <SafeAreaView style={styles.container}>
