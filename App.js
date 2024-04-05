@@ -6,6 +6,7 @@ import { getCalendarColumns, getDayColor, getDayText} from './src/util';
 import dayjs from 'dayjs';
 import { SimpleLineIcons } from '@expo/vector-icons'; 
 import Margin from './Margin';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 // MARK: - Property
 //날짜, 요일 column style 함수
@@ -44,6 +45,22 @@ const ArrowButton = ({iconName}) => {
   )
 }
 
+
+const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+
+
+const showDatePicker = () => {
+  setDatePickerVisibility(true);
+};
+
+const hideDatePicker = () => {
+  setDatePickerVisibility(false);
+};
+
+const handleConfirm = (date) => {
+  setSelectedDate(dayjs(date));
+  hideDatePicker();
+};
 
 export default function App() {
   // MARK: - Property
